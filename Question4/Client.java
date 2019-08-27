@@ -6,6 +6,9 @@ import java.util.Scanner;
 
 public class Client {
   public static void main (String[] args) {
+	  
+	//Server.main(new String[] {25,67,'hi'});
+	  
     String hostAddress;
     int tcpPort;
     int udpPort;
@@ -17,7 +20,7 @@ public class Client {
       System.out.println("\t(3) <udpPort>: the port number for UDP connection");
       System.exit(-1);
     }
-
+    
     hostAddress = args[0];
     tcpPort = Integer.parseInt(args[1]);
     udpPort = Integer.parseInt(args[2]);

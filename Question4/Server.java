@@ -21,7 +21,7 @@ public class Server {
 	    String fileName = args[2];
 	    //System.out.println(System.getProperty("user.dir"));
 	    // parse the inventory file
-	    File file = new File(System.getProperty("user.dir")+"\\src\\Question4\\input\\inventory.txt"); 
+	    File file = new File(System.getProperty("user.dir")+"\\src\\input\\inventory.txt"); 
 	    ArrayList<String> inventory = new ArrayList<String>();
 	    BufferedReader br = new BufferedReader(new FileReader(file)); 
 	    
@@ -54,4 +54,3 @@ public class Server {
 	  
 	  } 
 }
-	
