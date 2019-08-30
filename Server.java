@@ -5,8 +5,6 @@ import java.net.*;
 import java.util.ArrayList;
 
 public class Server {
-	
-	
 	static ArrayList<String> purchaseOrder = new ArrayList<String>();
 	static int orderID = 1;
 	  public static void main (String[] args) throws IOException {
@@ -46,15 +44,18 @@ public class Server {
 			  		datapacket=new DatagramPacket(buf, buf.length);
 			  		datasocket.receive(datapacket);
 			  		String data = new String(datapacket.getData());
+			  		String command ="list";
+			  		if(!data.contains("list")) {
+			  			command = data.substring(0, data.indexOf(" "));
+			  		}
 			  		
 			  		
-			  		String command = data.substring(0, data.indexOf(" "));
 			  		//System.out.println(command);
 			  		byte [] returnByte=null;
 			  		switch(command) {
 			  		case "purchase":
 			  			returnByte=UDPPurchase(orderID, data, inventory);		  		
-			  			System.out.println(new String(returnByte));
+			  			//System.out.println(new String(returnByte));
 			  			break;
 			  		case "cancel":
 			  			returnByte = UDPCancel(orderID);
@@ -86,10 +87,11 @@ public class Server {
 
 	private static byte [] UDPList(ArrayList<String> inventory) {
 		// TODO Auto-generated method stub
-		String inventoryString = null;
+		String inventoryString = "";
 		
 		for(int x = 0; x<inventory.size();x++) {
 			 inventoryString+=inventory.get(x);
+			 inventoryString+="\n";
 		}
 		return inventoryString.getBytes();
 	}
