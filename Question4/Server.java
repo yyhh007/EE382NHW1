@@ -5,16 +5,13 @@ import java.net.*;
 import java.util.ArrayList;
 
 public class Server {
-	
-	
 	static ArrayList<String> purchaseOrder = new ArrayList<String>();
-	
+	static int orderID = 1;
 	  public static void main (String[] args) throws IOException {
 		    int tcpPort;
 		    int udpPort;
 		    
 		    //server orderID for all customers
-		    int orderID=1;
 		    if (args.length != 3) {
 		      System.out.println("ERROR: Provide 3 arguments");
 		      System.out.println("\t(1) <tcpPort>: the port number for TCP connection");
@@ -38,24 +35,28 @@ public class Server {
 		    	inventory.add(st);
 		   
 		    // TODO: handle request from clients
-		  	byte[] buf = new byte[65535];
+		  	
 		  	DatagramPacket datapacket, returnpacket;
 		  	try{
+		  		
 			  	DatagramSocket datasocket= new DatagramSocket(udpPort);
-			  	
 			  	while(true){
+			  		byte[] buf = new byte[4048];
 			  		datapacket=new DatagramPacket(buf, buf.length);
 			  		datasocket.receive(datapacket);
 			  		String data = new String(datapacket.getData());
+			  		String command ="list";
+			  		if(!data.contains("list")) {
+			  			command = data.substring(0, data.indexOf(" "));
+			  		}
 			  		
 			  		
-			  		String command = data.substring(0, data.indexOf(" "));
-			  		System.out.println(command);
+			  		//System.out.println(command);
 			  		byte [] returnByte=null;
 			  		switch(command) {
 			  		case "purchase":
-			  			returnByte = UDPPurchase(orderID, data, inventory);
-			  			System.out.println(new String(returnByte));
+			  			returnByte=UDPPurchase(orderID, data, inventory);		  		
+			  			//System.out.println(new String(returnByte));
 			  			break;
 			  		case "cancel":
 			  			returnByte = UDPCancel(orderID);
@@ -64,12 +65,15 @@ public class Server {
 			  			returnByte = UDPSearch();
 			  			break;
 			  		case "list":
-			  			returnByte = UDPList();
+			  			returnByte = UDPList(inventory);
 			  			break;
 			  		}
 			  		
-			  		returnpacket = new DatagramPacket(returnByte,
-			  										datapacket.getLength()+100,
+			  		datapacket.setData(returnByte);
+		  			datapacket.setLength(returnByte.length);
+		  			
+			  		returnpacket = new DatagramPacket(datapacket.getData(),
+			  										datapacket.getLength(),
 			  										datapacket.getAddress(),
 			  										datapacket.getPort());
 			  		datasocket.send(returnpacket);
@@ -82,9 +86,15 @@ public class Server {
 	  
 	  }
 
-	private static byte [] UDPList() {
+	private static byte [] UDPList(ArrayList<String> inventory) {
 		// TODO Auto-generated method stub
-		return null;
+		String inventoryString = "";
+		
+		for(int x = 0; x<inventory.size();x++) {
+			 inventoryString+=inventory.get(x);
+			 inventoryString+="\n";
+		}
+		return inventoryString.getBytes();
 	}
 
 	private static byte [] UDPSearch() {
@@ -95,9 +105,18 @@ public class Server {
 	private static byte [] UDPCancel(int orderID) {
 		// TODO Auto-generated method stub
 		String id = String.valueOf(orderID);
-		for ()
-		
-		return null;
+		String [] returnResponses = {"Order-id"+id+" not found, no such order", "OrderID"+id+" is canceled"};
+		for (int x=0;x<purchaseOrder.size();x++) {
+			
+			if(id.equals(purchaseOrder.get(x).substring(0, purchaseOrder.get(x).indexOf(" ")).replaceAll("\\D+", ""))) {
+				purchaseOrder.remove(x);
+				//System.out.println("found order, order canceled\n");
+				//System.out.println(returnResponses[1]);
+				return returnResponses[1].getBytes();
+			}
+		}
+		//System.out.println("order not found");
+		return returnResponses[0].getBytes();
 	}
 
 	private static byte [] UDPPurchase(int orderID, String data, ArrayList<String> inventory) {
@@ -108,17 +127,19 @@ public class Server {
 		String [] returnResponses = {"Not Available - We do not sell this product","Not Available - Not enough items",returnedStringPurchaseComplete};
 		
 		
-		String [] commandList = data.split("\\s+");
-		
+		String [] commandList = data.split(" ");
+		//System.out.println(commandList);
 		//check if item is in inventory, not enough item, or enough item
 		for (int x=0; x<inventory.size() ;x++) {
 			if (commandList[2].contentEquals(inventory.get(x).substring(0, inventory.get(x).indexOf(" ")))) {
-				//
-				if(Integer.valueOf(commandList[3].replaceAll("\\D+", ""))>Integer.valueOf(inventory.get(x).replaceAll("\\D+", ""))) {
+				//(Integer.valueOf(inventory.get(x).substring(inventory.get(x).indexOf(" ")))
+				if(Integer.valueOf(commandList[3].replaceAll("\\D+", ""))>Integer.valueOf(inventory.get(x).substring(inventory.get(x).indexOf(" ")+1))) {
 					return returnResponses[1].getBytes();
 				}
 				else {
 					purchaseOrder.add(String.valueOf(orderID)+" "+data.substring(data.indexOf(" ")+1));
+					
+					//System.out.println(purchaseOrder);
 					return returnResponses[2].getBytes();
 				}
 			}

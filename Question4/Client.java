@@ -27,8 +27,7 @@ public class Client {
     udpPort = Integer.parseInt(args[2]);
     
     //UDP buffer packet
-    byte[] udprbuffer = new byte[50];
-    
+    byte[] udprbuffer = new byte[1024];
     Scanner sc = new Scanner(System.in);
     while(sc.hasNextLine()) {
       String cmd = sc.nextLine();
@@ -50,35 +49,11 @@ public class Client {
     	  //UDP client send information
     	  //need to add random user generation
     	  if(mode=="UDP"){
-    		  try {
-    			InetAddress ia = InetAddress.getByName(hostAddress);
-				DatagramSocket datasocket = new DatagramSocket();
-				String message = "purchase user1 "+productName+" "+quantity;
-				byte[] buffer = new byte[message.length()];
-				buffer=message.getBytes();
-				DatagramPacket sPacket, rPacket;
-				sPacket = new DatagramPacket(buffer, buffer.length, ia, udpPort);
-				System.out.println("got buffer");
-				datasocket.send(sPacket);
-				
-				rPacket = new DatagramPacket(udprbuffer, udprbuffer.length);
-				System.out.println("getting response");
-				datasocket.receive(rPacket);
-				System.out.println("got response");
-				String recieveString = new String(rPacket.getData(), 0, rPacket.getLength());
-				System.out.println("Returned value: "+recieveString);
-				
-			} catch (SocketException e) {
-				// TODO Auto-generated catch block
-				e.printStackTrace();
-			}catch (UnknownHostException e) {
-				// TODO Auto-generated catch block
-				e.printStackTrace();
-			}catch(IOException e){
-				e.printStackTrace();
-			}
-    		  
+    		  String message = "purchase user1 "+productName+" "+quantity;
+    		  String returnString = UDPSendClientRequest(hostAddress, message, udpPort, udprbuffer);
+    		  System.out.println("Returned value: "+returnString);	  
     	  }
+    	  //tcp
     	  else{
     		  
     	  }
@@ -87,34 +62,9 @@ public class Client {
         // appropriate responses form the server
     	  String cancelOrderNumber = tokens[1];
     	  if(mode=="UDP"){
-    		  try {
-    			InetAddress ia = InetAddress.getByName(hostAddress);
-				DatagramSocket datasocket = new DatagramSocket();
-				String message = "cancel "+cancelOrderNumber;
-				byte[] buffer = new byte[message.length()];
-				buffer=message.getBytes();
-				DatagramPacket sPacket, rPacket;
-				sPacket = new DatagramPacket(buffer, buffer.length, ia, udpPort);
-				System.out.println("got buffer");
-				datasocket.send(sPacket);
-				
-				rPacket = new DatagramPacket(udprbuffer, udprbuffer.length);
-				System.out.println("getting response");
-				datasocket.receive(rPacket);
-				System.out.println("got response");
-				String recieveString = new String(rPacket.getData(), 0, rPacket.getLength());
-				System.out.println("Cancel status: "+recieveString);
-				
-			} catch (SocketException e) {
-				// TODO Auto-generated catch block
-				e.printStackTrace();
-			}catch (UnknownHostException e) {
-				// TODO Auto-generated catch block
-				e.printStackTrace();
-			}catch(IOException e){
-				e.printStackTrace();
-			}
-    		  
+    		  String message = "cancel "+cancelOrderNumber;
+    		  String returnString = UDPSendClientRequest(hostAddress, message, udpPort, udprbuffer);
+    		  System.out.println("Cancel Status: "+returnString);  
     	  }
     	  else{
     		  
@@ -125,34 +75,10 @@ public class Client {
         // appropriate responses form the server
     	  String username = tokens[1];
     	  if(mode=="UDP"){
-    		  try {
-    			InetAddress ia = InetAddress.getByName(hostAddress);
-				DatagramSocket datasocket = new DatagramSocket();
-				String message = "search "+username;
-				byte[] buffer = new byte[message.length()];
-				buffer=message.getBytes();
-				DatagramPacket sPacket, rPacket;
-				sPacket = new DatagramPacket(buffer, buffer.length, ia, udpPort);
-				System.out.println("got buffer");
-				datasocket.send(sPacket);
-				
-				rPacket = new DatagramPacket(udprbuffer, udprbuffer.length);
-				System.out.println("getting response");
-				datasocket.receive(rPacket);
-				System.out.println("got response");
-				String recieveString = new String(rPacket.getData(), 0, rPacket.getLength());
-				System.out.println("User order history: "+recieveString);
-				
-			} catch (SocketException e) {
-				// TODO Auto-generated catch block
-				e.printStackTrace();
-			}catch (UnknownHostException e) {
-				// TODO Auto-generated catch block
-				e.printStackTrace();
-			}catch(IOException e){
-				e.printStackTrace();
-			}
-    		  
+    		  String message = "search "+username;
+    		  String returnString = UDPSendClientRequest(hostAddress, message, udpPort, udprbuffer);
+    		  System.out.println("User logs: "+returnString);  
+  
     	  }
     	  else{
     		  
@@ -161,34 +87,9 @@ public class Client {
         // TODO: send appropriate command to the server and display the
         // appropriate responses form the server
     	  if(mode=="UDP"){
-    		  try {
-    			InetAddress ia = InetAddress.getByName(hostAddress);
-				DatagramSocket datasocket = new DatagramSocket();
-				String message = "list";
-				byte[] buffer = new byte[message.length()];
-				buffer=message.getBytes();
-				DatagramPacket sPacket, rPacket;
-				sPacket = new DatagramPacket(buffer, buffer.length, ia, udpPort);
-				System.out.println("got buffer");
-				datasocket.send(sPacket);
-				
-				rPacket = new DatagramPacket(udprbuffer, udprbuffer.length);
-				System.out.println("getting response");
-				datasocket.receive(rPacket);
-				System.out.println("got response");
-				String recieveString = new String(rPacket.getData(), 0, rPacket.getLength());
-				System.out.println("Available products: \n"+recieveString);
-				
-			} catch (SocketException e) {
-				// TODO Auto-generated catch block
-				e.printStackTrace();
-			}catch (UnknownHostException e) {
-				// TODO Auto-generated catch block
-				e.printStackTrace();
-			}catch(IOException e){
-				e.printStackTrace();
-			}
-    		  
+    		  String message = "list";
+    		  String returnString = UDPSendClientRequest(hostAddress, message, udpPort, udprbuffer);
+    		  System.out.println("Inventory list: \n"+returnString);  
     	  }
     	  else{
     		  
@@ -198,4 +99,39 @@ public class Client {
       }
     }
   }
+
+private static String UDPSendClientRequest(String hostAddress, String message, int udpPort, byte[] udprbuffer) {
+	// TODO Auto-generated method stub
+	String recieveString = "error";
+	//System.out.println(message);
+	try {	  
+		InetAddress ia = InetAddress.getByName(hostAddress);
+		DatagramSocket datasocket = new DatagramSocket();
+		
+		byte[] buffer = new byte[message.length()];
+		buffer=message.getBytes();
+		DatagramPacket sPacket, rPacket;
+		//System.out.println(buffer.length + new String(buffer));
+		sPacket = new DatagramPacket(buffer, buffer.length, ia, udpPort);
+		//System.out.println("got buffer");
+		datasocket.send(sPacket);
+		
+		rPacket = new DatagramPacket(udprbuffer, udprbuffer.length);
+		//System.out.println("getting response");
+		datasocket.receive(rPacket);
+		//System.out.println("got response");
+		recieveString = new String(rPacket.getData(), 0, rPacket.getLength());
+		
+		//System.out.println("Returned value: "+recieveString);
+	} catch (SocketException e) {
+		// TODO Auto-generated catch block
+		e.printStackTrace();
+	}catch (UnknownHostException e) {
+		// TODO Auto-generated catch block
+		e.printStackTrace();
+	}catch(IOException e){
+		e.printStackTrace();
+	}
+	return recieveString;
+}
 }
