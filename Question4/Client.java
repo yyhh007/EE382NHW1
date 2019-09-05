@@ -5,15 +5,37 @@ import java.io.*;
 import java.util.Scanner;
 
 public class Client {
+	
+	Scanner din;
+	PrintStream pout;
+	Socket server;
+	
+	public void getSocket(String hostAddress, int port) throws IOException{
+		
+		server = new Socket(hostAddress, port);
+		din = new Scanner(server.getInputStream());
+		pout = new PrintStream(server.getOutputStream());
+	}
+	
+	
+	public String TCPPurchase(String hostAddress, int tcpPort, String outMessage) throws IOException {
+		 getSocket(hostAddress, tcpPort);
+		 pout.println(outMessage);
+		 pout.flush();
+		 String returnString = din.nextLine();
+		 server.close();
+		 return returnString;
+	}
+	
   public static void main (String[] args) {
 	  
 	
 	//Server.main(new String[] {25,67,'hi'});
-	  
+	Client client = new Client();
     String hostAddress;
     int tcpPort;
     int udpPort;
-    String mode = "UDP"; //default comm mode is set to TCP(0)
+    String mode = "TCP"; //default comm mode is set to TCP(0)
     if (args.length != 3) {
       System.out.println("ERROR: Provide 3 arguments");
       System.out.println("\t(1) <hostAddress>: the address of the server");
@@ -55,7 +77,14 @@ public class Client {
     	  }
     	  //tcp
     	  else{
-    		  
+    		  String message = "purchase user1 "+productName+" "+quantity;
+    		  try {
+				String returnString = client.TCPPurchase(hostAddress, tcpPort, message);
+				 System.out.println("Returned value: "+returnString);	
+			} catch (IOException e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+			}
     	  }
       } else if (tokens[0].equals("cancel")) {
         // TODO: send appropriate command to the server and display the
