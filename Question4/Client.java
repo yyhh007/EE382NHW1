@@ -18,116 +18,71 @@ public class Client {
 	}
 	
 	
-	public String TCPPurchase(String hostAddress, int tcpPort, String outMessage) throws IOException {
+	public void TCPSendClientRequest(String hostAddress, int tcpPort, String outMessage) throws IOException {
 		 getSocket(hostAddress, tcpPort);
 		 pout.println(outMessage);
 		 pout.flush();
 		 String returnString = din.nextLine();
 		 server.close();
-		 return returnString;
+		 System.out.println(returnString);
 	}
 	
-  public static void main (String[] args) {
-	  
 	
-	//Server.main(new String[] {25,67,'hi'});
-	Client client = new Client();
-    String hostAddress;
-    int tcpPort;
-    int udpPort;
-    String mode = "TCP"; //default comm mode is set to TCP(0)
-    if (args.length != 3) {
-      System.out.println("ERROR: Provide 3 arguments");
-      System.out.println("\t(1) <hostAddress>: the address of the server");
-      System.out.println("\t(2) <tcpPort>: the port number for TCP connection");
-      System.out.println("\t(3) <udpPort>: the port number for UDP connection");
-      System.exit(-1);
-    }
-    
-    hostAddress = args[0];
-    tcpPort = Integer.parseInt(args[1]);
-    udpPort = Integer.parseInt(args[2]);
-    
-    //UDP buffer packet
-    byte[] udprbuffer = new byte[1024];
-    Scanner sc = new Scanner(System.in);
-    while(sc.hasNextLine()) {
-      String cmd = sc.nextLine();
-      String[] tokens = cmd.split(" ");
-
-      if (tokens[0].equals("setmode")) {
-        // TODO: set the mode of communication for sending commands to the server 
-        // and display the name of the protocol that will be used in future
-    	  mode = ((tokens[1].equals("T") == true) ? "TCP" : "UDP"); 
-    	  System.out.println("Protocol set to: "+mode);
-      }
-      else if (tokens[0].equals("purchase")) {
-        // TODO: send appropriate command to the server and display the
-        // appropriate responses form the server
-    	  //sample message purchase <user-name> <product-name> <quantity>
-    	  String productName = tokens[1];
-    	  String quantity = tokens[2];
-    	 
-    	  //UDP client send information
-    	  //need to add random user generation
-    	  if(mode=="UDP"){
-    		  String message = "purchase user1 "+productName+" "+quantity;
-    		  String returnString = UDPSendClientRequest(hostAddress, message, udpPort, udprbuffer);
-    		  System.out.println("Returned value: "+returnString);	  
-    	  }
-    	  //tcp
-    	  else{
-    		  String message = "purchase user1 "+productName+" "+quantity;
-    		  try {
-				String returnString = client.TCPPurchase(hostAddress, tcpPort, message);
-				 System.out.println("Returned value: "+returnString);	
-			} catch (IOException e) {
-				// TODO Auto-generated catch block
-				e.printStackTrace();
+	public static void main (String[] args) throws IOException {
+		  
+		
+		//Server.main(new String[] {18udp,21tcp,'hi'});
+		Client client = new Client();
+		String hostAddress;
+		int tcpPort;
+		int udpPort;
+		String mode = "TCP"; //default comm mode is set to TCP(0)
+		if (args.length != 3) {
+			System.out.println("ERROR: Provide 3 arguments");
+			System.out.println("\t(1) <hostAddress>: the address of the server");
+			System.out.println("\t(2) <tcpPort>: the port number for TCP connection");
+			System.out.println("\t(3) <udpPort>: the port number for UDP connection");
+			System.exit(-1);
+		}
+		
+		//run arguments
+		hostAddress = args[0];
+		tcpPort = Integer.parseInt(args[1]);
+		udpPort = Integer.parseInt(args[2]);
+		
+		//UDP buffer packet
+		byte[] udprbuffer = new byte[1024];
+		Scanner sc = new Scanner(System.in);
+		while(sc.hasNextLine()) {
+			String cmd = sc.nextLine();
+			String[] tokens = cmd.split(" ");
+		
+		
+			String message = "";
+			switch (tokens[0]) {
+			case "purchase":
+				message = "purchase user1 "+tokens[1]+" "+tokens[2];
+				break;
+			case "search":
+				message = "search "+tokens[1];
+				break;
+			case "cancel":
+				message = "cancel "+tokens[1];
+				break;
+			case "list":
+				message = "list";
+				break;
+			case "setmode":
+				mode = ((tokens[1].equals("T") == true) ? "TCP" : "UDP"); 
+				System.out.println("Protocol set to: "+mode);
+				break;
 			}
-    	  }
-      } else if (tokens[0].equals("cancel")) {
-        // TODO: send appropriate command to the server and display the
-        // appropriate responses form the server
-    	  String cancelOrderNumber = tokens[1];
-    	  if(mode=="UDP"){
-    		  String message = "cancel "+cancelOrderNumber;
-    		  String returnString = UDPSendClientRequest(hostAddress, message, udpPort, udprbuffer);
-    		  System.out.println("Cancel Status: "+returnString);  
-    	  }
-    	  else{
-    		  
-    	  }
-    	  
-      } else if (tokens[0].equals("search")) {
-        // TODO: send appropriate command to the server and display the
-        // appropriate responses form the server
-    	  String username = tokens[1];
-    	  if(mode=="UDP"){
-    		  String message = "search "+username;
-    		  String returnString = UDPSendClientRequest(hostAddress, message, udpPort, udprbuffer);
-    		  System.out.println("User logs: "+returnString);  
-  
-    	  }
-    	  else{
-    		  
-    	  }
-      } else if (tokens[0].equals("list")) {
-        // TODO: send appropriate command to the server and display the
-        // appropriate responses form the server
-    	  if(mode=="UDP"){
-    		  String message = "list";
-    		  String returnString = UDPSendClientRequest(hostAddress, message, udpPort, udprbuffer);
-    		  System.out.println("Inventory list: \n"+returnString);  
-    	  }
-    	  else{
-    		  
-    	  }
-      } else {
-        System.out.println("ERROR: No such command");
-      }
-    }
-  }
+		  
+			if (mode == "TCP") client.TCPSendClientRequest(hostAddress, tcpPort, message);
+			else UDPSendClientRequest(hostAddress, message, udpPort, udprbuffer);
+		  
+		}
+	}
 
 private static String UDPSendClientRequest(String hostAddress, String message, int udpPort, byte[] udprbuffer) {
 	// TODO Auto-generated method stub

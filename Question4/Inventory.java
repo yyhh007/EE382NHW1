@@ -11,7 +11,7 @@ public class Inventory {
 	//syncronized values
 	ArrayList<String> inventory = new ArrayList<String>();
 	ArrayList<String> purchaseOrder = new ArrayList<String>();
-	
+	int orderID = 1;
 	//first time loading file
 	public void loadInventory() throws IOException{
 		File file = new File(System.getProperty("user.dir")+"\\src\\input\\inventory.txt"); 
@@ -26,6 +26,14 @@ public class Inventory {
 	
 	public synchronized ArrayList<String> getInventory() {  
 	    return inventory;
+	}
+	
+	public synchronized int getOrderID() {
+		return orderID;
+	}
+	
+	public synchronized void incrementOrderID() {
+		orderID+=1;
 	}
 	
 	public synchronized byte [] List(ArrayList<String> inventory) {
@@ -75,7 +83,7 @@ public class Inventory {
 		return returnResponses[0].getBytes();
 	}
 
-	public synchronized byte [] Purchase(int orderID, String [] commandList, ArrayList<String> inventory) {
+	public synchronized byte [] Purchase(String [] commandList, ArrayList<String> inventory) {
 		// TODO Auto-generated method stub
 		
 		//return responses
@@ -89,13 +97,19 @@ public class Inventory {
 		for (int x=0; x<inventory.size() ;x++) {
 			if (commandList[2].contentEquals(inventory.get(x).substring(0, inventory.get(x).indexOf(" ")))) {
 				//(Integer.valueOf(inventory.get(x).substring(inventory.get(x).indexOf(" ")))
-				if(Integer.valueOf(commandList[3].replaceAll("\\D+", ""))>Integer.valueOf(inventory.get(x).substring(inventory.get(x).indexOf(" ")+1))) {
+				int purchaseNumber = Integer.valueOf(commandList[3].replaceAll("\\D+", ""));
+				int inventoryNumber = Integer.valueOf(inventory.get(x).substring(inventory.get(x).indexOf(" ")+1));
+				
+				if(purchaseNumber > inventoryNumber) {
 					return returnResponses[1].getBytes();
 				}
 				else {
+					//change inventory, add purchase order to history, increase orderID, return string
 					purchaseOrder.add(String.valueOf(orderID)+" "+commandList[1]+" "+commandList[2]+" "+commandList[3]);
-					
+					inventory.set(x, commandList[2]+" "+String.valueOf((inventoryNumber-purchaseNumber)));
+					incrementOrderID();
 					System.out.println(purchaseOrder);
+					System.out.println(inventory);
 					return returnResponses[2].getBytes();
 				}
 			}

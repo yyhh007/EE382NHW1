@@ -25,10 +25,10 @@ public class Server {
 		    String fileName = args[2];
 		    //System.out.println(System.getProperty("user.dir"));
 		    // parse the inventory file
-		  
+		    
+		    //load initial inventory file items
 		    Inventory inven = new Inventory();
 		    inven.loadInventory();
-		    
 		    ArrayList<String> inventory = inven.getInventory();
 		    
 		    // TODO: handle request from clients
@@ -75,7 +75,7 @@ public class Server {
 					  			returnByte = inven.List(inventory);
 					  		} else if (command.equals("purchase")){
 					  			commandList[3]=commandList[3].replaceAll("[^\\d.]", "");
-					  			returnByte=inven.Purchase(1, commandList, inventory);		  		
+					  			returnByte=inven.Purchase(commandList, inventory);		  		
 					  			
 					  		} else if (command.contains("cancel")){
 					  			returnByte = inven.Cancel(1);		  		

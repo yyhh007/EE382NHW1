@@ -5,7 +5,7 @@ public class serverTest {
 	Client client;
 	
 	public void setup() {
-		//new Server();
+		new Server();
 		client= new Client();
 		
 	}
