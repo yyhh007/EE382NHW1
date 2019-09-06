@@ -3,12 +3,10 @@ package Question4;
 import java.io.IOException;
 import java.io.PrintWriter;
 import java.net.Socket;
-import java.util.ArrayList;
 import java.util.Scanner;
 
 
 public class TCPServerThread extends Thread {
-
 	Inventory inven;
 	Socket theClient;
 	
@@ -23,19 +21,11 @@ public class TCPServerThread extends Thread {
 			PrintWriter pout = new PrintWriter(theClient.getOutputStream());
 			
 			String [] commandList = s.nextLine().split(" ");
-			ArrayList<String> inventory = inven.getInventory();
 			
-			switch(commandList[0]) {
-			case "exit":
-				theClient.close();
-				System.exit(-1);
-				break;
-			
-			}
 			byte [] returnByte = null;
 			switch (commandList[0]) {
 			case "purchase":
-				returnByte = inven.Purchase(commandList, inventory);
+				returnByte = inven.Purchase(commandList);
 				break;
 			case "search":
 				returnByte = inven.Search(commandList);
@@ -44,12 +34,10 @@ public class TCPServerThread extends Thread {
 				returnByte = inven.Cancel(Integer.valueOf(commandList[1]));
 				break;
 			case "list":
-				returnByte = inven.List(inventory);
+				returnByte = inven.List();
 				break;
 			
-			}
-			//byte [] returnByte = inven.Purchase(commandList, inventory);
-			
+			}			
 			//System.out.println("Recived command: "+s.nextLine());
 			pout.println(new String(returnByte));
 			pout.flush();

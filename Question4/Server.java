@@ -23,9 +23,7 @@ public class Server {
 		    tcpPort = Integer.parseInt(args[0]);
 		    udpPort = Integer.parseInt(args[1]);
 		    String fileName = args[2];
-		    //System.out.println(System.getProperty("user.dir"));
-		    // parse the inventory file
-		    
+		 
 		    //load initial inventory file items
 		    Inventory inven = new Inventory();
 		    inven.loadInventory();
@@ -44,7 +42,6 @@ public class Server {
 		    				Thread t = new TCPServerThread(inven, s);
 		    				t.start();
 		    			}
-		    			
 		    		}catch(IOException e) {
 		    			System.out.println(e);
 		    		}
@@ -72,22 +69,20 @@ public class Server {
 					  		byte [] returnByte=null;
 					  		
 					  		if (command.contains("list")) {
-					  			returnByte = inven.List(inventory);
+					  			returnByte = inven.List();
 					  		} else if (command.equals("purchase")){
 					  			commandList[3]=commandList[3].replaceAll("[^\\d.]", "");
-					  			returnByte=inven.Purchase(commandList, inventory);		  		
+					  			returnByte=inven.Purchase(commandList);		  		
 					  			
 					  		} else if (command.contains("cancel")){
-					  			returnByte = inven.Cancel(1);		  		
+					  			returnByte = inven.Cancel(Integer.valueOf(commandList[1].replaceAll("[^\\d.]", "")));		  		
 					  			
 					  		} else if (command.contains("search")){
-					  			returnByte = inven.Search(commandList);		  		
-					  			
+					  			returnByte = inven.Search(commandList);		  							  			
 					  		} else {
 					  			System.out.println("Command not found"); 
 					  		}
-					  		
-					  		
+					  							  	
 					  		datapacket.setData(returnByte);
 				  			datapacket.setLength(returnByte.length);
 				  			
@@ -98,17 +93,9 @@ public class Server {
 					  		datasocket.send(returnpacket);
 					  	}
 				  	}catch(IOException e){
-				  		
-				  		
+				  						  	
 				  	}
 		    	}
-		    }).start();
-		    
-		    
-		    
-		  	
-	  	
-	  
+		    }).start(); 
 	  }
-	
 }

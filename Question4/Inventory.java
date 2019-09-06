@@ -7,7 +7,6 @@ import java.io.IOException;
 import java.util.ArrayList;
 
 public class Inventory {
-
 	//syncronized values
 	ArrayList<String> inventory = new ArrayList<String>();
 	ArrayList<String> purchaseOrder = new ArrayList<String>();
@@ -15,13 +14,11 @@ public class Inventory {
 	//first time loading file
 	public void loadInventory() throws IOException{
 		File file = new File(System.getProperty("user.dir")+"\\src\\input\\inventory.txt"); 
-			    
-			    
-			    BufferedReader br = new BufferedReader(new FileReader(file)); 
-			    
-			    String st; 
-			    while ((st = br.readLine()) != null) 
-			    	inventory.add(st);
+	    BufferedReader br = new BufferedReader(new FileReader(file)); 
+	    
+	    String st; 
+	    while ((st = br.readLine()) != null) 
+	    	inventory.add(st);
 	}
 	
 	public synchronized ArrayList<String> getInventory() {  
@@ -36,13 +33,14 @@ public class Inventory {
 		orderID+=1;
 	}
 	
-	public synchronized byte [] List(ArrayList<String> inventory) {
+	public synchronized byte [] List() {
 		// TODO Auto-generated method stub
 		String inventoryString = "";
 		
 		for(int x = 0; x<inventory.size();x++) {
 			 inventoryString+=inventory.get(x);
-			 inventoryString+="\n";
+			 inventoryString+="\t";
+			 //System.out.println(inventoryString);
 		}
 		return inventoryString.getBytes();
 	}
@@ -55,14 +53,12 @@ public class Inventory {
 		for (int x=0; x<purchaseOrder.size(); x++) {
 			each_purchase_record = purchaseOrder.get(x).split(" ");
 			if(clientName.contains(each_purchase_record[1])) {
-				searchResults = searchResults +"Order ID: "+ each_purchase_record[0]+"\nProduct name: " +each_purchase_record[2]+"\nQuantity: "+each_purchase_record[3]+".\n" ;
+				searchResults = searchResults +"OrderID"+ each_purchase_record[0]+" " +each_purchase_record[2]+" "+each_purchase_record[3]+"\t" ;
 			}
 		}
 		
-		if(searchResults == ""){
-			
-			searchResults = "No order found for "+ clientName;
-		}
+		if(searchResults == "")	searchResults = "No order found for "+ clientName;
+		
 		return searchResults.getBytes();
 	}
 
@@ -71,28 +67,27 @@ public class Inventory {
 		String id = String.valueOf(orderID);
 		String [] returnResponses = {"Order-id"+id+" not found, no such order", "OrderID"+id+" is canceled"};
 		for (int x=0;x<purchaseOrder.size();x++) {
-			
+			String [] order = purchaseOrder.get(x).split(" ");
 			if(id.equals(purchaseOrder.get(x).substring(0, purchaseOrder.get(x).indexOf(" ")).replaceAll("\\D+", ""))) {
+				for (int y=0; y<inventory.size() ;y++) {
+					if(order[2].contentEquals(inventory.get(y).substring(0, inventory.get(y).indexOf(" ")))){
+						inventory.set(y, order[2]+" "+String.valueOf((Integer.valueOf(order[3])+Integer.valueOf(inventory.get(y).substring(inventory.get(y).indexOf(" ")+1)))));
+					}
+				}
 				purchaseOrder.remove(x);
-				//System.out.println("found order, order canceled\n");
-				//System.out.println(returnResponses[1]);
 				return returnResponses[1].getBytes();
 			}
 		}
-		//System.out.println("order not found");
 		return returnResponses[0].getBytes();
 	}
 
-	public synchronized byte [] Purchase(String [] commandList, ArrayList<String> inventory) {
+	public synchronized byte [] Purchase(String [] commandList) {
 		// TODO Auto-generated method stub
 		
 		//return responses
 		String returnedStringPurchaseComplete = "Your order has been placed, OrderID"+String.valueOf(orderID)+" "+commandList[1]+" "+commandList[2]+" "+commandList[3];
 		String [] returnResponses = {"Not Available - We do not sell this product","Not Available - Not enough items",returnedStringPurchaseComplete};
 		
-		
-		//String [] commandList = data.split(" ");
-		//System.out.println(commandList);
 		//check if item is in inventory, not enough item, or enough item
 		for (int x=0; x<inventory.size() ;x++) {
 			if (commandList[2].contentEquals(inventory.get(x).substring(0, inventory.get(x).indexOf(" ")))) {
@@ -109,12 +104,11 @@ public class Inventory {
 					inventory.set(x, commandList[2]+" "+String.valueOf((inventoryNumber-purchaseNumber)));
 					incrementOrderID();
 					System.out.println(purchaseOrder);
-					System.out.println(inventory);
+					//System.out.println(inventory);
 					return returnResponses[2].getBytes();
 				}
 			}
 		}
-		
 		return returnResponses[0].getBytes();
 	} 
 	
