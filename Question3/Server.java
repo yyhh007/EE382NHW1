@@ -1,6 +1,10 @@
 package Question3;
 
+import java.io.IOException;
+import java.net.ServerSocket;
+import java.net.Socket;
 import java.util.Scanner;
+
 
 /*logic
 if client 
@@ -21,9 +25,27 @@ public class Server {
 		int numServer = sc.nextInt();
 		int numSeat = sc.nextInt();
 		
-		
 		for (int i = 0; i < numServer; i++) {
 		  // TODO: parse inputs to get the ips and ports of servers
+			String serverIP = sc.nextLine();
+			
+			
+			new Thread(new Runnable() {
+		    	public void run() {
+		    		System.out.println("tcp server started:");	
+		    		try {
+		    			ServerSocket listener  = new ServerSocket(8025);
+		    			Socket s;
+		    			
+		    			while ((s = listener.accept())!= null) {
+		    				//Thread t = new TCPServerThread(inven, s);
+		    				//t.start();
+		    			}
+		    		}catch(IOException e) {
+		    			System.out.println(e);
+		    		}
+		    	}
+		    }).start();
 		}
 		
 		// TODO: handle request from clients
