@@ -41,6 +41,7 @@ public class Client {
 		String hostAddress;
 		int numberOfServer;
 		int []tcpPorts=new int[args.length-1];
+		int tcpPortIndex = 0;
 		//run arguments
 		//getting all the ports 
 		numberOfServer = Integer.parseInt(args[0]);
@@ -60,10 +61,11 @@ public class Client {
 	    while(sc.hasNextLine()) {
 	    	String cmd = sc.nextLine();
 	    	String[] tokens = cmd.split(" ");
-	      	
+	      	String message = null;
 	      	if (tokens[0].equals("reserve")) {
 	        // TODO: send appropriate command to the server and display the
 	        // appropriate responses form the server
+	      		message = "reserve"+tokens[1];
 	    	} else if (tokens[0].equals("bookSeat")) {
 	        // TODO: send appropriate command to the server and display the
 	        // appropriate responses form the server
@@ -76,6 +78,14 @@ public class Client {
 	    	} else {
 	        System.out.println("ERROR: No such command");
 	    	}
+	      	
+	      	try {
+				client.TCPSendClientRequest(hostAddress, tcpPorts[tcpPortIndex], message);
+			} catch (IOException e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+			}
+
 	    }
 	}
 }
