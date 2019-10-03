@@ -1,3 +1,4 @@
+  
 package Question3;
 
 import java.io.IOException;
@@ -11,7 +12,6 @@ if client
 	sent to all server and client, 
 	
 	onreceive all acknowlege, add to queue, add a server sync to queue as well
-
 	onrelease let everyone know
 	tell server to sync what just happened
 if server
@@ -35,6 +35,23 @@ public class Server {
 		    		System.out.println("tcp server started:");	
 		    		try {
 		    			ServerSocket listener  = new ServerSocket(8025);
+		    			Socket s;
+		    			
+		    			while ((s = listener.accept())!= null) {
+		    				//Thread t = new TCPServerThread(inven, s);
+		    				//t.start();
+		    			}
+		    		}catch(IOException e) {
+		    			System.out.println(e);
+		    		}
+		    	}
+		    }).start();
+			
+			new Thread(new Runnable() {
+		    	public void run() {
+		    		System.out.println("tcp server started:");	
+		    		try {
+		    			ServerSocket listener  = new ServerSocket(8030);
 		    			Socket s;
 		    			
 		    			while ((s = listener.accept())!= null) {

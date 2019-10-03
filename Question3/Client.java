@@ -11,7 +11,8 @@ public class Client {
 	Scanner din;
 	PrintStream pout;
 	Socket server;
-	
+	int pid=1;
+	LamportClock c;
 	//open tcp socket
 	public void getSocket(String hostAddress, int port) throws IOException{
 		
@@ -24,7 +25,7 @@ public class Client {
 	
 	//add timeout here 100mill
 	//retry on timeout here, loop through list of server ips
-	public void TCPSendClientRequest(String hostAddress, int tcpPort, String outMessage) throws IOException {
+	public String TCPSendClientRequest(String hostAddress, int tcpPort, String outMessage) throws IOException {
 		 getSocket(hostAddress, tcpPort);
 		 pout.println(outMessage);
 		 pout.flush();
@@ -32,9 +33,10 @@ public class Client {
 		 returnString = returnString.replace("\t", "\n");
 		 server.close();
 		 System.out.println(returnString);
+		 return returnString;
 	}
 	
-	
+	//System.currentTimeMillis()
 	public static void main (String[] args) {
 		
 		Client client = new Client();
@@ -65,22 +67,25 @@ public class Client {
 	      	if (tokens[0].equals("reserve")) {
 	        // TODO: send appropriate command to the server and display the
 	        // appropriate responses form the server
-	      		message = "reserve"+tokens[1];
+	      		message = "reserve "+tokens[1];
 	    	} else if (tokens[0].equals("bookSeat")) {
 	        // TODO: send appropriate command to the server and display the
 	        // appropriate responses form the server
+	    		message = "bookseat "+ tokens[1]+ " "+tokens[2] ;
 	    	} else if (tokens[0].equals("search")) {
 	        // TODO: send appropriate command to the server and display the
 	        // appropriate responses form the server
+	    		message = "search "+tokens[1];
 	    	} else if (tokens[0].equals("delete")) {
 	        // TODO: send appropriate command to the server and display the
 	        // appropriate responses form the server
+	    		message = "delete " +tokens[1];
 	    	} else {
 	        System.out.println("ERROR: No such command");
 	    	}
 	      	
 	      	try {
-				client.TCPSendClientRequest(hostAddress, tcpPorts[tcpPortIndex], message);
+				String response = client.TCPSendClientRequest(hostAddress, tcpPorts[tcpPortIndex], message);
 			} catch (IOException e) {
 				// TODO Auto-generated catch block
 				e.printStackTrace();
