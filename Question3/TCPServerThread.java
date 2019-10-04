@@ -1,19 +1,45 @@
 package Question3;
 
 import java.io.IOException;
+import java.io.PrintStream;
 import java.io.PrintWriter;
 import java.net.Socket;
 import java.util.Comparator;
 import java.util.PriorityQueue;
 import java.util.Queue;
 import java.util.Scanner;
+import java.util.concurrent.locks.Lock;
 
 
-public class TCPServerThread extends Thread {
+public abstract class TCPServerThread extends Thread implements Lock{
 	Seats seat;
 	Socket theClient;
 	Queue <Timestamp>requestq;
 	LamportClock c;
+	int csAccepted = 0;
+	
+	Socket server;
+	Scanner din;
+	PrintStream pout;
+	//open tcp socket
+	public void getSocket(String hostAddress, int port) throws IOException{
+		
+		server = new Socket(hostAddress, port);
+		din = new Scanner(server.getInputStream());
+		pout = new PrintStream(server.getOutputStream());
+	}
+	
+	public String TCPSendClientRequest(String hostAddress, int tcpPort, String outMessage) throws IOException {
+		 getSocket(hostAddress, tcpPort);
+		 pout.println(outMessage);
+		 pout.flush();
+		 String returnString = din.nextLine();
+		 returnString = returnString.replace("\t", "\n");
+		 server.close();
+		 System.out.println(returnString);
+		 return returnString;
+	}
+	
 	public TCPServerThread(int seatNumber, Socket s, int tcpPortNumbers) {
 		this.seat= new Seats();
 		seat.initSeats(seatNumber);
