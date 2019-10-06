@@ -54,11 +54,11 @@ public class Client {
 		
 		//System.out.println(tcpPorts);
 	    Scanner sc = new Scanner(System.in);
-	    int numServer = sc.nextInt();
+	    /*int numServer = sc.nextInt();
 	
 	    for (int i = 0; i < numServer; i++) {
 	      // TODO: parse inputs to get the ips and ports of servers
-	    }
+	    }*/
 	    //client.TCPSendClientRequest(hostAddress, tcpPort, message);
 	    while(sc.hasNextLine()) {
 	    	String cmd = sc.nextLine();
@@ -83,8 +83,9 @@ public class Client {
 	    	} else {
 	        System.out.println("ERROR: No such command");
 	    	}
-	      	
+	      	message+=" 1";
 	      	try {
+	      		System.out.println("resquesting message: "+message+" at port "+hostAddress+Integer.toString(tcpPorts[tcpPortIndex]));
 				String response = client.TCPSendClientRequest(hostAddress, tcpPorts[tcpPortIndex], message);
 			} catch (IOException e) {
 				// TODO Auto-generated catch block

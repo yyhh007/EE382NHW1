@@ -16,6 +16,10 @@ public class Seats {
 		this.seats=currentSeats;
 	}
 	
+	public synchronized Map<Integer, String> getCurrentSeatAssignment() {
+		return this.seats;
+	}
+	
 	//reserve a seat of there is any, assigned by first available
 	public synchronized String reserveSeat(String name) {
 		String [] returnString = {"Sold out - No seat available", "Seat already booked against the name provided", "Seat assigned to you is "};
@@ -25,7 +29,7 @@ public class Seats {
 		for (Integer key : seats.keySet()) {
 		    if(seats.get(key)=="") {
 		    	seats.put(key, name);
-		    	return returnString[2]+name;
+		    	return returnString[2]+Integer.toString(key);
 		    }
 		}
 		return returnString[0];
