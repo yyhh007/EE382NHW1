@@ -12,7 +12,7 @@ import java.util.concurrent.locks.Lock;
 
 
 public class TCPServerThread extends Thread {
-	Seats seat;
+	Seats seat = null;
 	Socket theClient;
 	Queue <Timestamp>requestq;
 	LamportClock c;
@@ -51,16 +51,15 @@ public class TCPServerThread extends Thread {
 	
 	
 	
-	public TCPServerThread(int seatNumber, Socket s, int tcpPortNumbers, int [] tcpPortList) {
-		this.seat= new Seats();
-		seat.initSeats(seatNumber);
+	public TCPServerThread(int seatNumber, Socket s, Seats seat, int tcpPortNumbers, int [] tcpPortList) {
+		this.seat= seat;
+		
 		theClient = s;
 		c = new LamportClock();
 		this.portList=tcpPortList;
 		//we got a queue that has max size the number of servers, since each server can request once only
 		requestq = new PriorityQueue<Timestamp>(tcpPortNumbers, new Comparator<Timestamp>() {
-			public int compare(Timestamp a, Timestamp b) {return Timestamp.compare(a, b);}
-			
+			public int compare(Timestamp a, Timestamp b) {return Timestamp.compare(a, b);}	
 		});
 	}
 	
@@ -97,7 +96,8 @@ public class TCPServerThread extends Thread {
 				returnByte = seat.delete(localCommandList[1]).getBytes();
 				break;
 		}
-		seat.getCurrentSeatAssignment();
+		this.seat=seat.getCurrentSeatAssignment();
+		//seat.loadCurrentSeatStatus(seat.getCurrentSeatAssignment());
 		requestq.remove();
 		//return;
 		c.clockTick();
@@ -133,6 +133,10 @@ public class TCPServerThread extends Thread {
 		
 		this.seat = newSeat;
 	}
+	public void initSeats() {
+		
+	}
+	
 	//System.currentTimeMillis()
 	public void run() {
 		csAccepted = 0;

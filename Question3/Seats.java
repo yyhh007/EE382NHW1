@@ -8,7 +8,7 @@ public class Seats {
 	//current code
 	Map<Integer, String> seats = new HashMap<Integer, String>();
 	
-	public void initSeats(int seatNumbers) {
+	public Seats(int seatNumbers) {
 		for (int i = 1; i<=seatNumbers; i++) this.seats.put(i, "");
 	}
 	
@@ -16,8 +16,8 @@ public class Seats {
 		this.seats=currentSeats;
 	}
 	
-	public synchronized Map<Integer, String> getCurrentSeatAssignment() {
-		return this.seats;
+	public synchronized Seats getCurrentSeatAssignment() {
+		return this;
 	}
 	
 	//reserve a seat of there is any, assigned by first available

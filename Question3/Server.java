@@ -31,9 +31,10 @@ public class Server {
 	    		try {
 	    			ServerSocket listener  = new ServerSocket(8025);
 	    			Socket s;
-	    			
+	    			Seats seat = new Seats(10);
 	    			while ((s = listener.accept())!= null) {
-	    				Thread t = new TCPServerThread(10, s, 1, new int [] {8030});
+	    				Thread t = new TCPServerThread(10, s, seat, 1, new int [] {8030});
+	    				//((TCPServerThread) t).initSeats();
 	    				t.start();
 	    			}
 	    		}catch(IOException e) {
@@ -48,9 +49,9 @@ public class Server {
 	    		try {
 	    			ServerSocket listener  = new ServerSocket(8030);
 	    			Socket s;
-	    			
+	    			Seats seat = new Seats(10);
 	    			while ((s = listener.accept())!= null) {
-	    				Thread t = new TCPServerThread(10, s, 1, new int [] {8025});
+	    				Thread t = new TCPServerThread(10, s, seat, 1, new int [] {8025});
 	    				t.start();
 	    			}
 	    		}catch(IOException e) {
