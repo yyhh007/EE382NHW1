@@ -3,6 +3,9 @@ package Question3;
 import java.io.IOException;
 import java.net.ServerSocket;
 import java.net.Socket;
+import java.util.Comparator;
+import java.util.PriorityQueue;
+import java.util.Queue;
 import java.util.Scanner;
 
 
@@ -32,8 +35,11 @@ public class Server {
 	    			ServerSocket listener  = new ServerSocket(8025);
 	    			Socket s;
 	    			Seats seat = new Seats(10);
+	    			Queue <Timestamp>requestq = requestq = new PriorityQueue<Timestamp>(5, new Comparator<Timestamp>() {
+	    				public int compare(Timestamp a, Timestamp b) {return Timestamp.compare(a, b);}	
+	    			});
 	    			while ((s = listener.accept())!= null) {
-	    				Thread t = new TCPServerThread(10, s, seat, 1, new int [] {8030});
+	    				Thread t = new TCPServerThread(10, s, requestq, seat, 1, new int [] {8030});
 	    				//((TCPServerThread) t).initSeats();
 	    				t.start();
 	    			}
@@ -50,8 +56,11 @@ public class Server {
 	    			ServerSocket listener  = new ServerSocket(8030);
 	    			Socket s;
 	    			Seats seat = new Seats(10);
+	    			Queue <Timestamp>requestq = requestq = new PriorityQueue<Timestamp>(5, new Comparator<Timestamp>() {
+	    				public int compare(Timestamp a, Timestamp b) {return Timestamp.compare(a, b);}	
+	    			});
 	    			while ((s = listener.accept())!= null) {
-	    				Thread t = new TCPServerThread(10, s, seat, 1, new int [] {8025});
+	    				Thread t = new TCPServerThread(10, s, requestq, seat, 1, new int [] {8025});
 	    				t.start();
 	    			}
 	    		}catch(IOException e) {

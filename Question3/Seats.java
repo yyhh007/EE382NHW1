@@ -7,9 +7,14 @@ public class Seats {
 	
 	//current code
 	Map<Integer, String> seats = new HashMap<Integer, String>();
-	
+	String changedValueHolder = null;
 	public Seats(int seatNumbers) {
 		for (int i = 1; i<=seatNumbers; i++) this.seats.put(i, "");
+	}
+	
+	//changed value will be used to sync between servers
+	public String getChangedValue() {
+		return changedValueHolder;
 	}
 	
 	public synchronized void loadCurrentSeatStatus(Map currentSeats) {
@@ -20,14 +25,20 @@ public class Seats {
 		return this;
 	}
 	
+	public synchronized void syncSeats(int key, String value) {
+		seats.put(key, value);
+	}
+	
 	//reserve a seat of there is any, assigned by first available
 	public synchronized String reserveSeat(String name) {
+		changedValueHolder = "";
 		String [] returnString = {"Sold out - No seat available", "Seat already booked against the name provided", "Seat assigned to you is "};
 		
 		if(seats.containsValue(name)) return returnString[1];
 		
 		for (Integer key : seats.keySet()) {
 		    if(seats.get(key)=="") {
+		    	changedValueHolder = name+" "+Integer.toString(key);
 		    	seats.put(key, name);
 		    	return returnString[2]+Integer.toString(key);
 		    }
@@ -37,11 +48,13 @@ public class Seats {
 	
 	//reserve a specific seat number, if available
 	public synchronized String bookSeat(String [] seatNum) {
-		String returnString = seatNum[1]+" is not available";
-		int seatNumber = Integer.parseInt(seatNum[1]);
-		if(seats.containsValue(seatNum[0])|| seats.get(seatNumber)!="") return returnString;
+		changedValueHolder = "";
+		String returnString = seatNum[2]+" is not available";
+		int seatNumber = Integer.parseInt(seatNum[2]);
+		if(seats.containsValue(seatNum[1])|| seats.get(seatNumber)!="") return returnString;
 		else {
-			seats.put(seatNumber, seatNum[0]);
+			changedValueHolder = seatNum[1]+" "+seatNum[2];
+			seats.put(seatNumber, seatNum[1]);
 			return "Reserved";
 		}
 	}
@@ -49,10 +62,12 @@ public class Seats {
 	
 	//find if a person had reserved any seats previously
 	public synchronized String searchName(String name) {
+		changedValueHolder = "";
 		String returnString = "No reservation found for "+name;
 		if(seats.containsValue(name)) {
 			for (Integer key : seats.keySet()) {
-			    if(seats.get(key)==name) {
+			    if(seats.get(key).equals(name)) {
+			    	changedValueHolder = name+" "+Integer.toString(key);
 			    	return name+" reserved seat "+Integer.toString(key);
 			    }
 			}
@@ -66,7 +81,7 @@ public class Seats {
 		
 		if(seats.containsValue(name)) {
 			for (Integer key : seats.keySet()) {
-			    if(seats.get(key)==name) {
+			    if(seats.get(key).equals(name)) {
 			    	seats.put(key, "");
 			    	return name+" released seat "+Integer.toString(key);
 			    }
