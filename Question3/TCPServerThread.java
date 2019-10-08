@@ -3,6 +3,7 @@ package Question3;
 import java.io.IOException;
 import java.io.PrintStream;
 import java.io.PrintWriter;
+import java.net.ConnectException;
 import java.net.Socket;
 import java.util.Comparator;
 import java.util.HashSet;
@@ -25,6 +26,7 @@ public class TCPServerThread extends Thread {
 	PrintStream pout;
 	String hostAddress= "localhost";
 	String userCommand= null;
+	int crashedServerCount = 0;
 	
 	//open tcp socket
 	public void getSocket(String hostAddress, int port) throws IOException{
@@ -33,20 +35,27 @@ public class TCPServerThread extends Thread {
 		pout = new PrintStream(server.getOutputStream());
 	}
 	
+	//send request, handles checking for crashed servers
 	public void TCPSendClientRequest(String hostAddress, int tcpPort, String outMessage) throws IOException {
-		 getSocket(hostAddress, tcpPort);
-		 pout.println(outMessage);
-		 pout.flush();
-		 String returnString = din.nextLine();
-		 if (returnString.equals("ack")) csAccepted++; 
-		 server.close();
+		try {
+			getSocket(hostAddress, tcpPort);
+			pout.println(outMessage);
+			pout.flush();
+			String returnString = din.nextLine();
+			if (returnString.equals("ack")) csAccepted++; 
+			server.close();
+		} catch (ConnectException e){
+			System.out.println("no tcp connection");
+			crashedServerCount++;
+		}
+		
 	}
 	
 	public void TCPSendClientRelease(String hostAddress, int tcpPort, String outMessage) throws IOException {
-		 getSocket(hostAddress, tcpPort);
-		 pout.println(outMessage);
-		 pout.flush();
-		 server.close();
+		getSocket(hostAddress, tcpPort);
+		pout.println(outMessage);
+		pout.flush();
+		server.close();
 	}
 	
 	public TCPServerThread(int seatNumber, Socket s, Queue q, Seats seat, int tcpPortNumbers, int [] tcpPortList) {
@@ -69,7 +78,8 @@ public class TCPServerThread extends Thread {
 		c.clockTick();
 		requestq.add(new Timestamp(c.getValue(), pid));
 		
-		while(csAccepted != portList.length && pid == requestq.peek().pid) {
+		//might be wrong because of no lamport
+		while(csAccepted != (portList.length-crashedServerCount) && pid == requestq.peek().pid) {
 			System.out.println("task not head of queue");	
 		}
 		System.out.println("everyone said ok and im first in line");
