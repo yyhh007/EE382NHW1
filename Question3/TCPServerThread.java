@@ -3,7 +3,6 @@ package Question3;
 import java.io.IOException;
 import java.io.PrintStream;
 import java.io.PrintWriter;
-import java.net.ConnectException;
 import java.net.Socket;
 import java.util.Comparator;
 import java.util.HashSet;
@@ -26,8 +25,7 @@ public class TCPServerThread extends Thread {
 	PrintStream pout;
 	String hostAddress= "localhost";
 	String userCommand= null;
-	int crashedServerCount = 0;
-	
+	int seatNumber;
 	//open tcp socket
 	public void getSocket(String hostAddress, int port) throws IOException{
 		server = new Socket(hostAddress, port);
@@ -35,31 +33,25 @@ public class TCPServerThread extends Thread {
 		pout = new PrintStream(server.getOutputStream());
 	}
 	
-	//send request, handles checking for crashed servers
 	public void TCPSendClientRequest(String hostAddress, int tcpPort, String outMessage) throws IOException {
-		try {
-			getSocket(hostAddress, tcpPort);
-			pout.println(outMessage);
-			pout.flush();
-			String returnString = din.nextLine();
-			if (returnString.equals("ack")) csAccepted++; 
-			server.close();
-		} catch (ConnectException e){
-			System.out.println("no tcp connection");
-			crashedServerCount++;
-		}
-		
+		 getSocket(hostAddress, tcpPort);
+		 pout.println(outMessage);
+		 pout.flush();
+		 String returnString = din.nextLine();
+		 if (returnString.equals("ack")) csAccepted++; 
+		 server.close();
 	}
 	
 	public void TCPSendClientRelease(String hostAddress, int tcpPort, String outMessage) throws IOException {
-		getSocket(hostAddress, tcpPort);
-		pout.println(outMessage);
-		pout.flush();
-		server.close();
+		 getSocket(hostAddress, tcpPort);
+		 pout.println(outMessage);
+		 pout.flush();
+		 server.close();
 	}
 	
 	public TCPServerThread(int seatNumber, Socket s, Queue q, Seats seat, int tcpPortNumbers, int [] tcpPortList) {
 		this.seat= seat;
+		this.seatNumber = seatNumber;
 		this.theClient = s;
 		this.requestq = q;
 		c = new LamportClock();
@@ -72,14 +64,14 @@ public class TCPServerThread extends Thread {
 		//c.clockTick();
 		byte[] returnByte = null;
 		for (int port : portList) {
-			System.out.println("request "+ Integer.toString(pid)+ " "+ Integer.toString(c.getValue()));
+			System.out.println(Integer.toString(theClient.getLocalPort())+" request "+ Integer.toString(pid)+ " "+ Integer.toString(c.getValue()));
 			TCPSendClientRequest(hostAddress, port, "request "+ Integer.toString(pid)+ " "+ Integer.toString(c.getValue()));
 		}
 		c.clockTick();
 		requestq.add(new Timestamp(c.getValue(), pid));
 		
-		//might be wrong because of no lamport
-		while(csAccepted != (portList.length-crashedServerCount) && pid == requestq.peek().pid) {
+		//maybe wrong, or pid is wrong 
+		while(csAccepted != portList.length && pid != requestq.peek().pid) {
 			System.out.println("task not head of queue");	
 		}
 		System.out.println("everyone said ok and im first in line");
@@ -101,7 +93,7 @@ public class TCPServerThread extends Thread {
 		//seat.loadCurrentSeatStatus(seat.getCurrentSeatAssignment());
 		requestq.remove();
 		sendAck(seat.getChangedValue());
-		//return;
+		//return; change clock click to be in front of send ack
 		c.clockTick();
 		
 		return returnByte;
@@ -109,7 +101,7 @@ public class TCPServerThread extends Thread {
 	
 	public synchronized void sendAck (String syncValue) throws IOException{
 		for (int port : portList) {
-			System.out.println(Integer.toString(theClient.getLocalPort())+"release "+ Integer.toString(pid)+ " "+ Integer.toString(c.getValue()));
+			System.out.println(Integer.toString(theClient.getLocalPort())+" release "+ Integer.toString(pid)+ " "+ Integer.toString(c.getValue()));
 			TCPSendClientRelease(hostAddress, port, "release "+ syncValue+ " "+Integer.toString(pid)+ " "+ Integer.toString(c.getValue()));
 		}
 	}
@@ -175,16 +167,28 @@ public class TCPServerThread extends Thread {
 				
 				break;
 			case "crashSync":
-				System.out.println(Integer.toString(theClient.getLocalPort())+"crashsync");
+				String timestampString = "";
+				for(Timestamp t: requestq) {
+					timestampString=timestampString+t.timestampToString()+"/";
+				}	
+				System.out.println(Integer.toString(theClient.getLocalPort())+"crashsync returning:"+(seat.seatValueToString()+"/"+timestampString));
+
+				returnByte = ("ackSync "+seat.seatValueToString()+" "+timestampString).getBytes();
+				pout.println(new String(returnByte));
+				pout.flush();
 				break;
 			case "ackSync":
+				String []seatList = commandList[1].split("-");
+				String []timestamps = commandList[2].substring(0, commandList[2].length()).split("/");
+				for (int i = 1; i<=seatNumber; i++) seat.syncSeats(i, seatList[i-1]);
+				for (int i = 0; i<timestamps.length; i++) requestq.add(new Timestamp(Integer.parseInt(timestamps[i].split("-")[0]), Integer.parseInt(timestamps[i].split("-")[1])));
+				
 				System.out.println(Integer.toString(theClient.getLocalPort())+"acksync");
 				break;
 			default:
 				System.out.println(Integer.toString(theClient.getLocalPort())+"default");
 				break;
 			}			
-			//System.out.println("Recived command: "+s.nextLine());
 			System.out.println(Integer.toString(theClient.getLocalPort())+"  executed current command: "+command);
 			theClient.close();
 			//
