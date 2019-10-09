@@ -4,7 +4,6 @@ import java.util.HashMap;
 import java.util.Map;
 
 public class Seats {
-	
 	//current code
 	Map<Integer, String> seats = new HashMap<Integer, String>();
 	String changedValueHolder = null;
@@ -12,22 +11,35 @@ public class Seats {
 		for (int i = 1; i<=seatNumbers; i++) this.seats.put(i, "");
 	}
 	
+	public String seatValueToString() {
+		String returnString = "";
+		for (int i = 0; i<seats.size(); i++) {
+			returnString=returnString+seats.get(i)+"-";
+		}
+		return returnString.substring(0, returnString.length());
+	}
+	
+	
 	//changed value will be used to sync between servers
 	public String getChangedValue() {
 		return changedValueHolder;
 	}
 	
+	
 	public synchronized void loadCurrentSeatStatus(Map currentSeats) {
 		this.seats=currentSeats;
 	}
+	
 	
 	public synchronized Seats getCurrentSeatAssignment() {
 		return this;
 	}
 	
+	
 	public synchronized void syncSeats(int key, String value) {
 		seats.put(key, value);
 	}
+	
 	
 	//reserve a seat of there is any, assigned by first available
 	public synchronized String reserveSeat(String name) {
@@ -45,6 +57,7 @@ public class Seats {
 		}
 		return returnString[0];
 	}
+	
 	
 	//reserve a specific seat number, if available
 	public synchronized String bookSeat(String [] seatNum) {
@@ -75,10 +88,10 @@ public class Seats {
 		return returnString;
 	}
 	
+	
 	//delete seat a person has reserved
 	public synchronized String delete(String name) {
 		String returnString  = "No reservation found for "+name;
-		
 		if(seats.containsValue(name)) {
 			for (Integer key : seats.keySet()) {
 			    if(seats.get(key).equals(name)) {

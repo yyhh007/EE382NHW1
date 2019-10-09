@@ -3,6 +3,11 @@ package Question3;
 public class Timestamp {
 
 	int clock, pid;
+	
+	public String timestampToString() {		
+		return Integer.toString(clock)+"-"+Integer.toString(pid);
+	}
+	
 	public Timestamp(int clock, int pid) {
 		super();
 		this.clock = clock;
