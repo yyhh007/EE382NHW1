@@ -42,6 +42,17 @@ public class TCPServerThread extends Thread {
 		 server.close();
 	}
 	
+	
+	public void TCPSendClientRequestCrashSync(String hostAddress, int tcpPort, String outMessage) throws IOException {
+		 getSocket(hostAddress, tcpPort);
+		 pout.println(outMessage);
+		 pout.flush();
+		 //String[] returnString = din.nextLine().split(" ");
+		 
+		 server.close();
+	}
+	
+	
 	public void TCPSendClientRelease(String hostAddress, int tcpPort, String outMessage) throws IOException {
 		 getSocket(hostAddress, tcpPort);
 		 pout.println(outMessage);
@@ -49,16 +60,27 @@ public class TCPServerThread extends Thread {
 		 server.close();
 	}
 	
-	public TCPServerThread(int seatNumber, Socket s, Queue q, Seats seat, int tcpPortNumbers, int [] tcpPortList) {
+	public TCPServerThread(int seatNumber, Socket s, Queue q, Seats seat, int tcpPortNumbers, int [] tcpPortList, boolean crashedServer) throws IOException {
 		this.seat= seat;
 		this.seatNumber = seatNumber;
 		this.theClient = s;
 		this.requestq = q;
 		c = new LamportClock();
 		this.portList=tcpPortList;
+		System.out.println(s.getLocalPort()+" coming back from crash?: "+crashedServer);
 		//we got a queue that has max size the number of servers, since each server can request once only
-		
+		if(crashedServer) {
+			TCPSendClientCrashSyncRequest(hostAddress, portList[0], "crashSync");
+		}
 	}
+	
+	public void TCPSendClientCrashSyncRequest(String hostAddress, int tcpPort, String outMessage) throws IOException {
+		 getSocket(hostAddress, tcpPort);
+		 pout.println(outMessage);
+		 pout.flush();
+		 server.close();
+	}
+	
 	
 	public synchronized byte[] requestCS(int pid) throws IOException{
 		//c.clockTick();
@@ -165,27 +187,28 @@ public class TCPServerThread extends Thread {
 					else seat.syncSeats(Integer.parseInt(commandList[2]), commandList[1]);
 					
 				}
-				System.out.println(Integer.toString(theClient.getLocalPort())+"release");
+				//System.out.println(Integer.toString(theClient.getLocalPort())+" just released his task");
 				
 				break;
 			case "crashSync":
 				String timestampString = "";
 				for(Timestamp t: requestq) {
-					timestampString=timestampString+t.timestampToString()+"/";
+					timestampString=timestampString+t.timestampToString()+"-";
 				}	
-				System.out.println(Integer.toString(theClient.getLocalPort())+"crashsync returning:"+(seat.seatValueToString()+"/"+timestampString));
-
-				returnByte = ("ackSync "+seat.seatValueToString()+" "+timestampString).getBytes();
-				pout.println(new String(returnByte));
-				pout.flush();
+				System.out.println(Integer.toString(theClient.getLocalPort())+" ackSync returning:"+(seat.seatValueToString()+"/"+timestampString));
+				TCPSendClientRequestCrashSync(hostAddress, portList[0], "ackSync "+seat.seatValueToString()+" "+timestampString);
+				
 				break;
 			case "ackSync":
-				String []seatList = commandList[1].split("-");
-				String []timestamps = commandList[2].substring(0, commandList[2].length()).split("/");
-				for (int i = 1; i<=seatNumber; i++) seat.syncSeats(i, seatList[i-1]);
-				for (int i = 0; i<timestamps.length; i++) requestq.add(new Timestamp(Integer.parseInt(timestamps[i].split("-")[0]), Integer.parseInt(timestamps[i].split("-")[1])));
-				
-				System.out.println(Integer.toString(theClient.getLocalPort())+"acksync");
+				if (commandList[0].equals("ackSync")) {
+					 String []seatList = commandList[1].split("-");
+					 String [] timestamps = null;
+					 if(commandList[2]!=null)
+						 timestamps = commandList[2].substring(0, commandList[2].length()).split("/");
+					for (int i = 1; i<=seatNumber; i++) seat.syncSeats(i, seatList[i-1]);
+					for (int i = 0; i<timestamps.length; i++) requestq.add(new Timestamp(Integer.parseInt(timestamps[i].split("-")[0]), Integer.parseInt(timestamps[i].split("-")[1])));
+				 }
+				System.out.println(Integer.toString(theClient.getLocalPort())+"acksync complete");
 				break;
 			default:
 				System.out.println(Integer.toString(theClient.getLocalPort())+"default");

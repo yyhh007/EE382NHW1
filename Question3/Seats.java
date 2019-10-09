@@ -13,7 +13,7 @@ public class Seats {
 	
 	public String seatValueToString() {
 		String returnString = "";
-		for (int i = 0; i<seats.size(); i++) {
+		for (int i = 1; i<=seats.size(); i++) {
 			returnString=returnString+seats.get(i)+"-";
 		}
 		return returnString.substring(0, returnString.length());

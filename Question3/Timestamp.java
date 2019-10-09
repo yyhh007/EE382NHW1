@@ -5,7 +5,7 @@ public class Timestamp {
 	int clock, pid;
 	
 	public String timestampToString() {		
-		return Integer.toString(clock)+"-"+Integer.toString(pid);
+		return Integer.toString(clock)+"_"+Integer.toString(pid);
 	}
 	
 	public Timestamp(int clock, int pid) {

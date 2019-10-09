@@ -39,7 +39,7 @@ public class Server {
 	    				public int compare(Timestamp a, Timestamp b) {return Timestamp.compare(a, b);}	
 	    			});
 	    			while ((s = listener.accept())!= null) {
-	    				Thread t = new TCPServerThread(10, s, requestq, seat, 1, new int [] {8030});
+	    				Thread t = new TCPServerThread(10, s, requestq, seat, 2, new int [] {8030, 8035}, false);
 	    				//((TCPServerThread) t).initSeats();
 	    				t.start();
 	    			}
@@ -60,7 +60,27 @@ public class Server {
 	    				public int compare(Timestamp a, Timestamp b) {return Timestamp.compare(a, b);}	
 	    			});
 	    			while ((s = listener.accept())!= null) {
-	    				Thread t = new TCPServerThread(10, s, requestq, seat, 1, new int [] {8025});
+	    				Thread t = new TCPServerThread(10, s, requestq, seat, 2, new int [] {8025, 8035}, false);
+	    				t.start();
+	    			}
+	    		}catch(IOException e) {
+	    			System.out.println(e);
+	    		}
+	    	}
+	    }).start();
+		
+		new Thread(new Runnable() {
+	    	public void run() {
+	    		System.out.println("tcp server on port 8035 started:");	
+	    		try {
+	    			ServerSocket listener  = new ServerSocket(8035);
+	    			Socket s;
+	    			Seats seat = new Seats(10);
+	    			Queue <Timestamp>requestq = requestq = new PriorityQueue<Timestamp>(5, new Comparator<Timestamp>() {
+	    				public int compare(Timestamp a, Timestamp b) {return Timestamp.compare(a, b);}	
+	    			});
+	    			while ((s = listener.accept())!= null) {
+	    				Thread t = new TCPServerThread(10, s, requestq, seat, 2, new int [] {8025, 8030}, true);
 	    				t.start();
 	    			}
 	    		}catch(IOException e) {
