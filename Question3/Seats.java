@@ -90,16 +90,18 @@ public class Seats {
 	
 	
 	//delete seat a person has reserved
-	public synchronized String delete(String name) {
-		String returnString  = "No reservation found for "+name;
-		if(seats.containsValue(name)) {
-			for (Integer key : seats.keySet()) {
-			    if(seats.get(key).equals(name)) {
-			    	seats.put(key, "");
-			    	return name+" released seat "+Integer.toString(key);
-			    }
+		public synchronized String delete(String name) {
+			String returnString  = "No reservation found for "+name;
+			changedValueHolder = "";
+			if(seats.containsValue(name)) {
+				for (Integer key : seats.keySet()) {
+				    if(seats.get(key).equals(name)) {
+				    	seats.put(key, "");
+				    	changedValueHolder = "delete "+Integer.toString(key);
+				    	return name+" released seat "+Integer.toString(key);
+				    }
+				}
 			}
+			return returnString;		
 		}
-		return returnString;		
-	}
 }

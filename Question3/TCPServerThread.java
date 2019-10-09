@@ -161,7 +161,9 @@ public class TCPServerThread extends Thread {
 			case "release":
 				requestq.remove();
 				if(commandList.length==5) {
-					seat.syncSeats(Integer.parseInt(commandList[2]), commandList[1]);
+					if(commandList[1].contentEquals("delete")) seat.syncSeats(Integer.parseInt(commandList[2]), "");
+					else seat.syncSeats(Integer.parseInt(commandList[2]), commandList[1]);
+					
 				}
 				System.out.println(Integer.toString(theClient.getLocalPort())+"release");
 				
