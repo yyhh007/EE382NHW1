@@ -5,12 +5,11 @@ import java.io.PrintStream;
 import java.io.PrintWriter;
 import java.net.Socket;
 import java.util.Comparator;
+import java.util.ConcurrentModificationException;
 import java.util.HashSet;
 import java.util.PriorityQueue;
 import java.util.Queue;
 import java.util.Scanner;
-import java.util.concurrent.locks.Lock;
-
 
 public class TCPServerThread extends Thread {
 	Seats seat = null;
@@ -26,6 +25,7 @@ public class TCPServerThread extends Thread {
 	String hostAddress= "localhost";
 	String userCommand= null;
 	int seatNumber;
+	boolean inCS = false;
 	//open tcp socket
 	public void getSocket(String hostAddress, int port) throws IOException{
 		server = new Socket(hostAddress, port);
@@ -86,7 +86,7 @@ public class TCPServerThread extends Thread {
 		//c.clockTick();
 		byte[] returnByte = null;
 		for (int port : portList) {
-			System.out.println(Integer.toString(theClient.getLocalPort())+" request "+ Integer.toString(pid)+ " "+ Integer.toString(c.getValue()));
+			System.out.println(Integer.toString(theClient.getLocalPort())+" requesting pid and lamport clock "+ Integer.toString(pid)+ " "+ Integer.toString(c.getValue()));
 			TCPSendClientRequest(hostAddress, port, "request "+ Integer.toString(pid)+ " "+ Integer.toString(c.getValue()));
 		}
 		c.clockTick();
@@ -117,7 +117,7 @@ public class TCPServerThread extends Thread {
 		sendAck(seat.getChangedValue());
 		//return; change clock click to be in front of send ack
 		c.clockTick();
-		
+		inCS = false;
 		return returnByte;
 	}
 	
@@ -130,7 +130,7 @@ public class TCPServerThread extends Thread {
 	
 
 	//System.currentTimeMillis()
-	public void run() {
+	public void run() throws ConcurrentModificationException{
 		csAccepted = 0;
 		try {
 			Scanner s = new Scanner(theClient.getInputStream());
@@ -141,25 +141,31 @@ public class TCPServerThread extends Thread {
 			byte [] returnByte = null;
 			switch (commandList[0]) {
 			case "reserve":
+				inCS = true;
 				userCommand = command;
 				pid = Integer.parseInt(commandList[commandList.length-1]);
 				returnByte = requestCS(Integer.parseInt(commandList[commandList.length-1]));
+				//inCS = false;
 				pout.println(new String(returnByte));
 				pout.flush();
 				//returnByte = seat.reserveSeat(commandList[1]).getBytes();
 				break;
 			case "bookseat":
+				inCS = true;
 				pid = Integer.parseInt(commandList[commandList.length-1]);
 				userCommand = command;
 				returnByte = requestCS(Integer.parseInt(commandList[commandList.length-1]));
+				//inCS = false;
 				pout.println(new String(returnByte));
 				pout.flush();
 				//returnByte = seat.bookSeat(commandList).getBytes();
 				break;
 			case "delete":
+				inCS = true;
 				pid = Integer.parseInt(commandList[commandList.length-1]);
 				userCommand = command;
 				returnByte = requestCS(Integer.parseInt(commandList[commandList.length-1]));
+				
 				pout.println(new String(returnByte));
 				pout.flush();
 				//returnByte = seat.delete(commandList[1]).getBytes();
@@ -170,6 +176,7 @@ public class TCPServerThread extends Thread {
 				pout.flush();
 				break;
 			case "request":
+				
 				this.requestq.add(new Timestamp(Integer.parseInt(commandList[2]), Integer.parseInt(commandList[1])));
 				c.receiveAction(Integer.parseInt(commandList[2]));
 				String returnString = "ack";
@@ -191,6 +198,7 @@ public class TCPServerThread extends Thread {
 				
 				break;
 			case "crashSync":
+				while(inCS) {}
 				String timestampString = "";
 				for(Timestamp t: requestq) {
 					timestampString=timestampString+t.timestampToString()+"-";
@@ -201,12 +209,14 @@ public class TCPServerThread extends Thread {
 				break;
 			case "ackSync":
 				if (commandList[0].equals("ackSync")) {
-					 String []seatList = commandList[1].split("-");
+					 String []seatList = commandList[1].split("-",-1);
 					 String [] timestamps = null;
-					 if(commandList[2]!=null)
-						 timestamps = commandList[2].substring(0, commandList[2].length()).split("/");
+					 if(commandList.length==3) {
+						timestamps = commandList[2].substring(0, commandList[2].length()).split("/");
+						for (int i = 1; i<=timestamps.length; i++) requestq.add(new Timestamp(Integer.parseInt(timestamps[i].split("-", -1)[0]), Integer.parseInt(timestamps[i].split("-")[1])));
+
+					 }
 					for (int i = 1; i<=seatNumber; i++) seat.syncSeats(i, seatList[i-1]);
-					for (int i = 0; i<timestamps.length; i++) requestq.add(new Timestamp(Integer.parseInt(timestamps[i].split("-")[0]), Integer.parseInt(timestamps[i].split("-")[1])));
 				 }
 				System.out.println(Integer.toString(theClient.getLocalPort())+"acksync complete");
 				break;
