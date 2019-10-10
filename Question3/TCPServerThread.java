@@ -218,13 +218,13 @@ public class TCPServerThread extends Thread {
 					 }
 					for (int i = 1; i<=seatNumber; i++) seat.syncSeats(i, seatList[i-1]);
 				 }
-				System.out.println(Integer.toString(theClient.getLocalPort())+"acksync complete");
+				System.out.println(Integer.toString(theClient.getLocalPort())+" acksync complete");
 				break;
 			default:
 				System.out.println(Integer.toString(theClient.getLocalPort())+"default");
 				break;
 			}			
-			System.out.println(Integer.toString(theClient.getLocalPort())+"  executed current command: "+command);
+			//System.out.println(Integer.toString(theClient.getLocalPort())+"  executed current command: "+command);
 			theClient.close();
 			//
 		}catch(IOException e){
