@@ -60,11 +60,12 @@ public class TCPServerThread extends Thread {
 		 server.close();
 	}
 	
-	public TCPServerThread(int seatNumber, LamportClock c, Socket s, Queue q, Seats seat, int tcpPortNumbers, int [] tcpPortList, boolean crashedServer) throws IOException {
+	public TCPServerThread(int seatNumber, int pid, LamportClock c, Socket s, Queue q, Seats seat, int tcpPortNumbers, int [] tcpPortList, boolean crashedServer) throws IOException {
 		this.seat= seat;
 		this.seatNumber = seatNumber;
 		this.theClient = s;
 		this.requestq = q;
+		this.pid=pid;
 		this.c = c;
 		this.portList=tcpPortList;
 		System.out.println(s.getLocalPort()+" coming back from crash?: "+crashedServer);
@@ -143,8 +144,8 @@ public class TCPServerThread extends Thread {
 			case "reserve":
 				inCS = true;
 				userCommand = command;
-				pid = Integer.parseInt(commandList[commandList.length-1]);
-				returnByte = requestCS(Integer.parseInt(commandList[commandList.length-1]));
+				//pid = Integer.parseInt(commandList[commandList.length-1]);
+				returnByte = requestCS(pid);
 				//inCS = false;
 				pout.println(new String(returnByte));
 				pout.flush();
@@ -152,9 +153,9 @@ public class TCPServerThread extends Thread {
 				break;
 			case "bookseat":
 				inCS = true;
-				pid = Integer.parseInt(commandList[commandList.length-1]);
+				//pid = Integer.parseInt(commandList[commandList.length-1]);
 				userCommand = command;
-				returnByte = requestCS(Integer.parseInt(commandList[commandList.length-1]));
+				returnByte = requestCS(pid);
 				//inCS = false;
 				pout.println(new String(returnByte));
 				pout.flush();
@@ -162,9 +163,9 @@ public class TCPServerThread extends Thread {
 				break;
 			case "delete":
 				inCS = true;
-				pid = Integer.parseInt(commandList[commandList.length-1]);
+				//pid = Integer.parseInt(commandList[commandList.length-1]);
 				userCommand = command;
-				returnByte = requestCS(Integer.parseInt(commandList[commandList.length-1]));
+				returnByte = requestCS(pid);
 				
 				pout.println(new String(returnByte));
 				pout.flush();
@@ -192,7 +193,6 @@ public class TCPServerThread extends Thread {
 				if(commandList.length==5) {
 					if(commandList[1].contentEquals("delete")) seat.syncSeats(Integer.parseInt(commandList[2]), "");
 					else seat.syncSeats(Integer.parseInt(commandList[2]), commandList[1]);
-					
 				}
 				//System.out.println(Integer.toString(theClient.getLocalPort())+" just released his task");
 				
@@ -205,7 +205,6 @@ public class TCPServerThread extends Thread {
 				}	
 				System.out.println(Integer.toString(theClient.getLocalPort())+" ackSync returning:"+(seat.seatValueToString()+"/"+timestampString));
 				TCPSendClientRequestCrashSync(hostAddress, portList[0], "ackSync "+seat.seatValueToString()+" "+timestampString);
-				
 				break;
 			case "ackSync":
 				if (commandList[0].equals("ackSync")) {

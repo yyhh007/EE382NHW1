@@ -32,7 +32,7 @@ public class Server {
 		for (int i = 0; i < numServer; i++) {
 		  	// TODO: parse inputs to get the ips and ports of servers
 			int portNumber = sc.nextInt();
-			
+			int pid = myID+i;
 			new Thread(new Runnable() {
 		    	public void run() {
 		    		System.out.println("tcp server on port 8025 started:");	
@@ -45,7 +45,7 @@ public class Server {
 		    				public int compare(Timestamp a, Timestamp b) {return Timestamp.compare(a, b);}	
 		    			});
 		    			while ((s = listener.accept())!= null) {
-		    				Thread t = new TCPServerThread(numSeat, myID+i, c, s, requestq, seat, 2, new int [] {8030, 8035}, false);
+		    				Thread t = new TCPServerThread(numSeat, pid, c, s, requestq, seat, 2, new int [] {8030, 8035}, false);
 		    				//((TCPServerThread) t).initSeats();
 		    				t.start();
 		    			}
