@@ -34,12 +34,13 @@ public class Server {
 	    		try {
 	    			ServerSocket listener  = new ServerSocket(8025);
 	    			Socket s;
+	    			LamportClock c = new LamportClock();
 	    			Seats seat = new Seats(10);
 	    			Queue <Timestamp>requestq = requestq = new PriorityQueue<Timestamp>(5, new Comparator<Timestamp>() {
 	    				public int compare(Timestamp a, Timestamp b) {return Timestamp.compare(a, b);}	
 	    			});
 	    			while ((s = listener.accept())!= null) {
-	    				Thread t = new TCPServerThread(10, s, requestq, seat, 2, new int [] {8030, 8035}, false);
+	    				Thread t = new TCPServerThread(10, c, s, requestq, seat, 2, new int [] {8030, 8035}, false);
 	    				//((TCPServerThread) t).initSeats();
 	    				t.start();
 	    			}
@@ -56,11 +57,12 @@ public class Server {
 	    			ServerSocket listener  = new ServerSocket(8030);
 	    			Socket s;
 	    			Seats seat = new Seats(10);
+	    			LamportClock c = new LamportClock();
 	    			Queue <Timestamp>requestq = requestq = new PriorityQueue<Timestamp>(5, new Comparator<Timestamp>() {
 	    				public int compare(Timestamp a, Timestamp b) {return Timestamp.compare(a, b);}	
 	    			});
 	    			while ((s = listener.accept())!= null) {
-	    				Thread t = new TCPServerThread(10, s, requestq, seat, 2, new int [] {8025, 8035}, false);
+	    				Thread t = new TCPServerThread(10, c, s, requestq, seat, 2, new int [] {8025, 8035}, false);
 	    				t.start();
 	    			}
 	    		}catch(IOException e) {
@@ -76,11 +78,12 @@ public class Server {
 	    			ServerSocket listener  = new ServerSocket(8035);
 	    			Socket s;
 	    			Seats seat = new Seats(10);
+	    			LamportClock c = new LamportClock();
 	    			Queue <Timestamp>requestq = requestq = new PriorityQueue<Timestamp>(5, new Comparator<Timestamp>() {
 	    				public int compare(Timestamp a, Timestamp b) {return Timestamp.compare(a, b);}	
 	    			});
 	    			while ((s = listener.accept())!= null) {
-	    				Thread t = new TCPServerThread(10, s, requestq, seat, 2, new int [] {8025, 8030}, true);
+	    				Thread t = new TCPServerThread(10,c, s, requestq, seat, 2, new int [] {8025, 8030}, true);
 	    				t.start();
 	    			}
 	    		}catch(IOException e) {

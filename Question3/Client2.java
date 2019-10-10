@@ -10,7 +10,7 @@ import java.time.Instant;
 import java.util.Scanner;
 
 
-public class Client {
+public class Client2 {
 	//from sample code, required params
 	Scanner din;
 	PrintStream pout;
@@ -98,7 +98,7 @@ public class Client {
 		String hostAddress;
 		int numberOfServer;
 		int []tcpPorts=new int[args.length-1];
-		int tcpPortIndex = 1;
+		int tcpPortIndex = 0;
 		//run arguments
 		//getting all the ports 
 		

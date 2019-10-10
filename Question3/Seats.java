@@ -49,7 +49,7 @@ public class Seats {
 		if(seats.containsValue(name)) return returnString[1];
 		
 		for (Integer key : seats.keySet()) {
-		    if(seats.get(key)=="") {
+		    if(seats.get(key).equals("")) {
 		    	changedValueHolder = name+" "+Integer.toString(key);
 		    	seats.put(key, name);
 		    	return returnString[2]+Integer.toString(key);
@@ -64,7 +64,7 @@ public class Seats {
 		changedValueHolder = "";
 		String returnString = seatNum[2]+" is not available";
 		int seatNumber = Integer.parseInt(seatNum[2]);
-		if(seats.containsValue(seatNum[1])|| seats.get(seatNumber)!="") return returnString;
+		if(seats.containsValue(seatNum[1])|| (!seats.get(seatNumber).equals(""))) return returnString;
 		else {
 			changedValueHolder = seatNum[1]+" "+seatNum[2];
 			seats.put(seatNumber, seatNum[1]);

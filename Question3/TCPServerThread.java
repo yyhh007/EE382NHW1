@@ -60,12 +60,12 @@ public class TCPServerThread extends Thread {
 		 server.close();
 	}
 	
-	public TCPServerThread(int seatNumber, Socket s, Queue q, Seats seat, int tcpPortNumbers, int [] tcpPortList, boolean crashedServer) throws IOException {
+	public TCPServerThread(int seatNumber, LamportClock c, Socket s, Queue q, Seats seat, int tcpPortNumbers, int [] tcpPortList, boolean crashedServer) throws IOException {
 		this.seat= seat;
 		this.seatNumber = seatNumber;
 		this.theClient = s;
 		this.requestq = q;
-		c = new LamportClock();
+		this.c = c;
 		this.portList=tcpPortList;
 		System.out.println(s.getLocalPort()+" coming back from crash?: "+crashedServer);
 		//we got a queue that has max size the number of servers, since each server can request once only
@@ -212,8 +212,8 @@ public class TCPServerThread extends Thread {
 					 String []seatList = commandList[1].split("-",-1);
 					 String [] timestamps = null;
 					 if(commandList.length==3) {
-						timestamps = commandList[2].substring(0, commandList[2].length()).split("/");
-						for (int i = 1; i<=timestamps.length; i++) requestq.add(new Timestamp(Integer.parseInt(timestamps[i].split("-", -1)[0]), Integer.parseInt(timestamps[i].split("-")[1])));
+						timestamps = commandList[2].substring(0, commandList[2].length()).split("-", -1);
+						for (int i = 0; i<timestamps.length-1; i++) requestq.add(new Timestamp(Integer.parseInt(timestamps[i].split("_")[0]), Integer.parseInt(timestamps[i].split("_")[1])));
 
 					 }
 					for (int i = 1; i<=seatNumber; i++) seat.syncSeats(i, seatList[i-1]);
