@@ -7,7 +7,7 @@ import java.util.Comparator;
 import java.util.PriorityQueue;
 import java.util.Queue;
 import java.util.Scanner;
-
+import java.util.Arrays;
 
 /*logic
 if client 
@@ -27,15 +27,26 @@ public class Server {
 		int myID = sc.nextInt();
 		int numServer = sc.nextInt();
 		int numSeat = sc.nextInt();
+		int [] serverList =new int[numServer];
 		
 		
 		for (int i = 0; i < numServer; i++) {
+			serverList[i]= sc.nextInt();
+		}
+		
+		for (int i = 0, k=0; i < numServer; i++) {
 		  	// TODO: parse inputs to get the ips and ports of servers
-			int portNumber = sc.nextInt();
+			int portNumber = serverList[i];
+			int [] otherPortList= new int[numServer-1];
+			for (int j = 0; j<numServer-1;j++) {
+				if (i==j) continue;
+				else otherPortList[k++]=serverList[i];
+			}
+			
 			int pid = myID+i;
 			new Thread(new Runnable() {
 		    	public void run() {
-		    		System.out.println("tcp server on port 8025 started:");	
+		    		System.out.println("tcp server on port "+Integer.toString(portNumber)+" started:");	
 		    		try {
 		    			ServerSocket listener  = new ServerSocket(portNumber);
 		    			Socket s;
@@ -45,7 +56,7 @@ public class Server {
 		    				public int compare(Timestamp a, Timestamp b) {return Timestamp.compare(a, b);}	
 		    			});
 		    			while ((s = listener.accept())!= null) {
-		    				Thread t = new TCPServerThread(numSeat, pid, c, s, requestq, seat, 2, new int [] {8030, 8035}, false);
+		    				Thread t = new TCPServerThread(numSeat, pid, c, s, requestq, seat, 2, otherPortList, false);
 		    				//((TCPServerThread) t).initSeats();
 		    				t.start();
 		    			}
