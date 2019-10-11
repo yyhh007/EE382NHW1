@@ -34,37 +34,64 @@ public class Server {
 			serverList[i]= sc.nextInt();
 		}
 		
-		for (int i = 0, k=0; i < numServer; i++) {
+		for (int i = 0; i < numServer; i++) {
 		  	// TODO: parse inputs to get the ips and ports of servers
 			int portNumber = serverList[i];
 			int [] otherPortList= new int[numServer-1];
-			for (int j = 0; j<numServer-1;j++) {
+			for (int j = 0, k=0; j<numServer;j++) {
 				if (i==j) continue;
-				else otherPortList[k++]=serverList[i];
+				else otherPortList[k++]=serverList[j];
+			}
+			if (i==numServer-1) {
+				int pid = myID+i;
+				new Thread(new Runnable() {
+			    	public void run() {
+			    		System.out.println("tcp server on port "+Integer.toString(portNumber)+" started:");	
+			    		try {
+			    			ServerSocket listener  = new ServerSocket(portNumber);
+			    			Socket s;
+			    			LamportClock c = new LamportClock();
+			    			Seats seat = new Seats(numSeat);
+			    			Queue <Timestamp>requestq = requestq = new PriorityQueue<Timestamp>(numServer, new Comparator<Timestamp>() {
+			    				public int compare(Timestamp a, Timestamp b) {return Timestamp.compare(a, b);}	
+			    			});
+			    			while ((s = listener.accept())!= null) {
+			    				Thread t = new TCPServerThread(numSeat, pid, c, s, requestq, seat, 2, otherPortList, true);
+			    				//((TCPServerThread) t).initSeats();
+			    				t.start();
+			    			}
+			    		}catch(IOException e) {
+			    			System.out.println(e);
+			    		}
+			    	}
+			    }).start();
+				
+			}
+			else {
+				int pid = myID+i;
+				new Thread(new Runnable() {
+			    	public void run() {
+			    		System.out.println("tcp server on port "+Integer.toString(portNumber)+" started:");	
+			    		try {
+			    			ServerSocket listener  = new ServerSocket(portNumber);
+			    			Socket s;
+			    			LamportClock c = new LamportClock();
+			    			Seats seat = new Seats(numSeat);
+			    			Queue <Timestamp>requestq = requestq = new PriorityQueue<Timestamp>(numServer, new Comparator<Timestamp>() {
+			    				public int compare(Timestamp a, Timestamp b) {return Timestamp.compare(a, b);}	
+			    			});
+			    			while ((s = listener.accept())!= null) {
+			    				Thread t = new TCPServerThread(numSeat, pid, c, s, requestq, seat, 2, otherPortList, false);
+			    				//((TCPServerThread) t).initSeats();
+			    				t.start();
+			    			}
+			    		}catch(IOException e) {
+			    			System.out.println(e);
+			    		}
+			    	}
+			    }).start();
 			}
 			
-			int pid = myID+i;
-			new Thread(new Runnable() {
-		    	public void run() {
-		    		System.out.println("tcp server on port "+Integer.toString(portNumber)+" started:");	
-		    		try {
-		    			ServerSocket listener  = new ServerSocket(portNumber);
-		    			Socket s;
-		    			LamportClock c = new LamportClock();
-		    			Seats seat = new Seats(numSeat);
-		    			Queue <Timestamp>requestq = requestq = new PriorityQueue<Timestamp>(numServer, new Comparator<Timestamp>() {
-		    				public int compare(Timestamp a, Timestamp b) {return Timestamp.compare(a, b);}	
-		    			});
-		    			while ((s = listener.accept())!= null) {
-		    				Thread t = new TCPServerThread(numSeat, pid, c, s, requestq, seat, 2, otherPortList, false);
-		    				//((TCPServerThread) t).initSeats();
-		    				t.start();
-		    			}
-		    		}catch(IOException e) {
-		    			System.out.println(e);
-		    		}
-		    	}
-		    }).start();
 			
 			
 		}		
